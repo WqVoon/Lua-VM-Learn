@@ -140,5 +140,10 @@ func Undump(data []byte) *Prototype {
 	r.checkHeader()
 	// 跳过主函数的 Upvalue 数量，因为这个值从 Prototype 中也可以拿到
 	r.readByte()
-	return r.readProto("")
+	ret := r.readProto("")
+
+	if len(r.data) != 0 {
+		panic("Undump Error")
+	}
+	return ret
 }
