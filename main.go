@@ -21,5 +21,5 @@ func main() {
 	}
 
 	bc := binchunk.Undump(data)
-	fmt.Printf("%+v", bc)
+	fmt.Printf("%+v\n", bc)
 }

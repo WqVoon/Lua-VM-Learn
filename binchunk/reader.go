@@ -47,7 +47,134 @@ func (self *reader) checkHeader() {
 递归读取函数 Prototype 并返回主函数
 */
 func (self *reader) readProto(parentSource string) *Prototype {
-	return &Prototype{}
+	source := self.readString()
+	// 只有最顶层的 Prototype 才会获得 Source
+	// 子 Prototype 可以继承父 Prototype 的值
+	if source == "" {
+		source = parentSource
+	}
+	return &Prototype{
+		Source:          source,
+		LineDefined:     self.readUint32(),
+		LastLineDefined: self.readUint32(),
+		NumParams:       self.readByte(),
+		IsVararg:        self.readByte(),
+		MaxStackSize:    self.readByte(),
+		Code:            self.readCode(),
+		Constants:       self.readConstants(),
+		Upvalues:        self.readUpvalues(),
+		Protos:          self.readProtos(source),
+		LineInfo:        self.readLineInfo(),
+		LocVars:         self.readLocVars(),
+		UpvalueNames:    self.readUpvalueNames(),
+	}
+}
+
+/*
+读取所有的指令
+*/
+func (self *reader) readCode() []uint32 {
+	code := make([]uint32, self.readUint32())
+	for i := range code {
+		code[i] = self.readUint32()
+	}
+	return code
+}
+
+/*
+读取一个常量
+*/
+func (self *reader) readConstant() interface{} {
+	tag := self.readByte()
+	switch tag {
+	case TAG_NIL:
+		return nil
+	case TAG_BOOLEAN:
+		return self.readByte()
+	case TAG_NUMBER:
+		return self.readLuaNumber()
+	case TAG_INTEGER:
+		return self.readLuaInteger()
+	case TAG_SHORT_STR:
+		return self.readString()
+	case TAG_LONG_STR:
+		return self.readString()
+	default:
+		panic("Tag Error")
+	}
+}
+
+/*
+读取所有的常量
+*/
+func (self *reader) readConstants() []interface{} {
+	constants := make([]interface{}, self.readUint32())
+	for i := range constants {
+		constants[i] = self.readConstant()
+	}
+	return constants
+}
+
+/*
+读取所有的 Upvalue
+*/
+func (self *reader) readUpvalues() []Upvalue {
+	upvalues := make([]Upvalue, self.readUint32())
+	for i := range upvalues {
+		upvalues[i] = Upvalue{
+			Instack: self.readByte(),
+			Idx:     self.readByte(),
+		}
+	}
+	return upvalues
+}
+
+/*
+读取所有的子 Prototype
+*/
+func (self *reader) readProtos(source string) []*Prototype {
+	protos := make([]*Prototype, self.readUint32())
+	for i := range protos {
+		protos[i] = self.readProto(source)
+	}
+	return protos
+}
+
+/*
+读取行号表
+*/
+func (self *reader) readLineInfo() []uint32 {
+	lineInfo := make([]uint32, self.readUint32())
+	for i := range lineInfo {
+		lineInfo[i] = self.readUint32()
+	}
+	return lineInfo
+}
+
+/*
+读取局部变量表
+*/
+func (self *reader) readLocVars() []LocVar {
+	locVars := make([]LocVar, self.readUint32())
+	for i := range locVars {
+		locVars[i] = LocVar{
+			VarName: self.readString(),
+			StartPc: self.readUint32(),
+			EndPc:   self.readUint32(),
+		}
+	}
+	return locVars
+}
+
+/*
+读取 Upvalue 名表
+*/
+func (self *reader) readUpvalueNames() []string {
+	upValueNames := make([]string, self.readUint32())
+	for i := range upValueNames {
+		upValueNames[i] = self.readString()
+	}
+	return upValueNames
 }
 
 /*
