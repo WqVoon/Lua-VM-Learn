@@ -5,9 +5,49 @@ import (
 	"math"
 )
 
+/*
+用于读取并分析 BinChunk 中的字节流
+*/
 type reader struct {
 	// 内部记录将要被解析的字节流
 	data []byte
+}
+
+/*
+检查头部是否和所需的数据一致，不一致则直接退出函数；
+由于头部对于运行时没有什么作用，所以这里读取并判断后直接丢弃
+*/
+func (self *reader) checkHeader() {
+	if string(self.readBytes(4)) != LUA_SIGNATURE {
+		panic("Signature Error")
+	} else if self.readByte() != LUAC_VERSION {
+		panic("Luac Version Error")
+	} else if self.readByte() != LUAC_FORMAT {
+		panic("Luac Format Error")
+	} else if string(self.readBytes(6)) != LUAC_DATA {
+		panic("Luac Data Error")
+	} else if self.readByte() != CINT_SIZE {
+		panic("Cint Size Error")
+	} else if self.readByte() != CSIZET_SIZE {
+		panic("Size_t Size Error")
+	} else if self.readByte() != INSTRUCTION_SIZE {
+		panic("Instruction Size Error")
+	} else if self.readByte() != LUA_INTEGER_SIZE {
+		panic("Lua Integer Size Error")
+	} else if self.readByte() != LUA_NUMBER_SIZE {
+		panic("Lua Number Size Error")
+	} else if self.readLuaInteger() != LUAC_INT {
+		panic("Lua Integer Format Error")
+	} else if self.readLuaNumber() != LUAC_NUM {
+		panic("Lua Number Format Error")
+	}
+}
+
+/*
+递归读取函数 Prototype 并返回主函数
+*/
+func (self *reader) readProto(parentSource string) *Prototype {
+	return &Prototype{}
 }
 
 /*

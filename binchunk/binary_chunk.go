@@ -112,7 +112,7 @@ const (
 	LUA_SIGNATURE    = "\x1bLua"
 	LUAC_VERSION     = 0x53
 	LUAC_FORMAT      = 0
-	LUAC_DATA        = "\x19\x13\r\n\x1a\n"
+	LUAC_DATA        = "\x19\x93\r\n\x1a\n"
 	CINT_SIZE        = 4
 	CSIZET_SIZE      = 8
 	INSTRUCTION_SIZE = 4
@@ -131,3 +131,14 @@ const (
 	TAG_SHORT_STR = 0x04
 	TAG_LONG_STR  = 0x14
 )
+
+/*
+用来从 BinChunk 中读取数据并返回主函数的 Prototype
+*/
+func Undump(data []byte) *Prototype {
+	r := reader{data}
+	r.checkHeader()
+	// 跳过主函数的 Upvalue 数量，因为这个值从 Prototype 中也可以拿到
+	r.readByte()
+	return r.readProto("")
+}
