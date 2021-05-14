@@ -20,8 +20,8 @@ func (self Instruction) Opcode() int {
 */
 func (self Instruction) ABC() (a, b, c int) {
 	a = int(self >> 6 & 0xFF)
-	b = int(self >> 14 & 0x1FF)
-	c = int(self >> 23 & 0x1FF)
+	c = int(self >> 14 & 0x1FF)
+	b = int(self >> 23 & 0x1FF)
 	return
 }
 

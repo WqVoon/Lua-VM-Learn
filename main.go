@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"lua-vm/binchunk"
+	. "lua-vm/vm"
 	"os"
 )
 
@@ -12,7 +13,7 @@ func main() {
 	if len(os.Args) != 1 {
 		filename = os.Args[1]
 	} else {
-		filename = "a.out"
+		filename = "luac.out"
 	}
 
 	data, err := ioutil.ReadFile(filename)
@@ -69,7 +70,11 @@ func printCode(f *binchunk.Prototype) {
 		if len(f.LineInfo) > 0 {
 			line = fmt.Sprintf("%d", f.LineInfo[pc])
 		}
-		fmt.Printf("\t%d\t[%s]\t0x%08X\n", pc+1, line, c)
+		// fmt.Printf("\t%d\t[%s]\t0x%08X\n", pc+1, line, c)
+		i := Instruction(c)
+		fmt.Printf("\t%d\t[%s]\t%s \t", pc+1, line, i.OpName())
+		printOperands(i)
+		fmt.Printf("\n")
 	}
 }
 
@@ -110,5 +115,58 @@ func constantToString(k interface{}) string {
 		return fmt.Sprintf("%q", k)
 	default:
 		return "?"
+	}
+}
+
+/*
+用于打印指令的操作数
+TODO: 为什么有些输出是 -1-x？
+*/
+func printOperands(i Instruction) {
+	switch i.OpMode() {
+	case IABC:
+		a, b, c := i.ABC()
+		fmt.Printf("%d", a)
+
+		if i.BMode() != OpArgN {
+			// 如果 B 操作数被使用
+			if b > 0xFF {
+				// 第 9 位为 1，此时 B 操作数表示常量表索引
+				// TODO：为什么要输出成 -1-b&0xFF？
+				fmt.Printf(" %d", -1-b&0xFF)
+			} else {
+				// 否则表示寄存器索引
+				fmt.Printf(" %d", b)
+			}
+		}
+
+		if i.CMode() != OpArgN {
+			// C 操作数同上
+			if c > 0xFF {
+				fmt.Printf(" %d", -1-c&0xFF)
+			} else {
+				fmt.Printf(" %d", c)
+			}
+		}
+
+	case IABx:
+		a, bx := i.ABx()
+		fmt.Printf("%d", a)
+
+		if i.BMode() == OpArgK {
+			fmt.Printf(" %d", -1-bx)
+		} else if i.BMode() == OpArgU {
+			fmt.Printf(" %d", bx)
+		} else {
+			panic("Error BMode")
+		}
+
+	case IAsBx:
+		a, sbx := i.AsBx()
+		fmt.Printf("%d %d", a, sbx)
+
+	case IAx:
+		ax := i.Ax()
+		fmt.Printf("%d", -1-ax)
 	}
 }
