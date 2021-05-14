@@ -117,7 +117,7 @@ type opcode struct {
 	argBMode byte
 	// C 操作数的类型
 	argCMode byte
-	// TODO：操作类型？
+	// 指令类型
 	opMode byte
 	// 操作码名称
 	name string
