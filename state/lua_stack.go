@@ -94,3 +94,15 @@ func (self *luaStack) set(idx int, val luaValue) {
 	}
 	panic("Invalid Index")
 }
+
+/*
+把 LuaStack 的 [from, to] 区间的内容进行反转（Golang 视角）
+*/
+func (self *luaStack) reverse(from, to int) {
+	slots := self.slots
+	for from < to {
+		slots[from], slots[to] = slots[to], slots[from]
+		from++
+		to--
+	}
+}
