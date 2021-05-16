@@ -66,6 +66,14 @@ func (self *luaStack) absIndex(idx int) int {
 }
 
 /*
+检查相对索引是否有效（在 Lua 视角下）
+*/
+func (self *luaStack) isValid(idx int) bool {
+	absIdx := self.absIndex(idx)
+	return self.isAbsValid(absIdx)
+}
+
+/*
 检查绝对索引是否有效（在 Lua 视角下）
 */
 func (self *luaStack) isAbsValid(absIdx int) bool {
