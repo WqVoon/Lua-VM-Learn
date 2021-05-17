@@ -25,9 +25,9 @@ type LuaState interface {
 	IsInteger(idx int) bool
 	IsNumber(idx int) bool
 	IsString(idx int) bool
-	IsTable(idx int) bool
-	IsThread(idx int) bool
-	IsFunction(idx int) bool
+	// IsTable(idx int) bool
+	// IsThread(idx int) bool
+	// IsFunction(idx int) bool
 	ToBoolean(idx int) bool
 	ToInteger(idx int) int64
 	ToIntegerX(idx int) (int64, bool)
